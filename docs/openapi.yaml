@@ -1,0 +1,130 @@
+openapi: 3.0.0
+info:
+  title: API Transparansi Dana IPNU-IPPNU (Hybrid App)
+  version: 1.0.0
+  description: Kontrak API untuk sistem Web2 dan integrasi Web3.
+servers:
+  - url: http://localhost:8000/api/v1
+
+paths:
+  /proposals:
+    get:
+      summary: Mengambil daftar proposal pengeluaran kas (Public)
+      responses:
+        '200':
+          description: Berhasil mengambil data.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ProposalResponse'
+        '400':
+          description: Parameter query tidak valid (Client Error).
+        '500':
+          description: Kesalahan pada server database (Server Error).
+          
+    post:
+      summary: Membuat draf proposal baru (Khusus Bendahara)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProposalCreate'
+      responses:
+        '201':
+          description: Proposal berhasil dibuat.
+        '401':
+          description: Tidak ada akses (Belum Login / Bukan Bendahara).
+        '500':
+          description: Gagal terhubung ke database.
+
+  /users:
+    get:
+      summary: Mengambil data pengurus organisasi
+      responses:
+        '200':
+          description: Sukses. Password dihilangkan dari payload.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/UserResponse'
+        '404':
+          description: Data pengguna tidak ditemukan.
+        '500':
+          description: Internal Server Error.
+
+  /ai/anomalies/check:
+    post:
+      tags:
+        - AI
+      summary: Mendeteksi anomali nominal pengajuan kas menggunakan AI
+      description: Mengecek apakah pengajuan dana mencurigakan menggunakan model ML. Jika model AI gagal merespons, sistem akan menggunakan aturan batas fallback (Rule-based limit).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProposalCreate'
+      responses:
+        '200':
+          description: Analisis selesai.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AIAnomalyResponse'
+        '400':
+          description: Format data proposal tidak sesuai.
+        '500':
+          description: Model AI gagal dimuat dan fallback gagal dieksekusi.
+
+components:
+  schemas:
+    ProposalCreate:
+      type: object
+      required:
+        - judul_kegiatan
+        - nominal
+      properties:
+        judul_kegiatan:
+          type: string
+        nominal:
+          type: number
+    ProposalResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+        judul_kegiatan:
+          type: string
+        nominal:
+          type: number
+        status:
+          type: string
+        tx_hash:
+          type: string
+    UserResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+        nama:
+          type: string
+        role:
+          type: string
+        wallet_address:
+          type: string
+    AIAnomalyResponse:
+      type: object
+      properties:
+        is_anomaly:
+          type: boolean
+        confidence_score:
+          type: number
+        reason:
+          type: string
+        fallback_used:
+          type: boolean

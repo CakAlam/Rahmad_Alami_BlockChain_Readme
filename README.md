@@ -1,1 +1,3 @@
-# Rahmad Alami Maulana Bisri
+# Rahmad Alami Maulana Bisri\
+[ASUMSI-01]: Karena skema autentikasi menggunakan Web3 (Connect Wallet), endpoint registrasi konvensional dengan password tidak dicantumkan di OpenAPI, diasumsikan dompet digital ditautkan langsung oleh admin database.
+[ASUMSI-02]: Untuk endpoint /ai/anomalies/check, diasumsikan jika koneksi API ke model AI terputus, sistem akan mengeksekusi jalur fallback statis (menandai transaksi > Rp 2.000.000 sebagai anomali yang perlu ditinjau manual).
